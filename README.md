@@ -8,7 +8,7 @@ Each Endpoint costs 1 cent per AZ per hour. For example if you were to deploy In
 `Formula: #VPC Endpoints x #AZs x 24hrs x 30 days x .01(Pricing per VPC endpoint per AZ ($/hour))` <br />
 If we have 10 vpc endpoints, in 3 AZs, the cost is going to be as below:<br />
 `[10 x 3 x 24 x 30 x .01] = ~$216/month*` <br />
-The cost doesn’t look bad if you have one or two accounts, but if you have 100 accounts and each housing around 10 endpoints that will be outrageous `(~$21,600/month* or $259k/yr*)`. <br />
+For big organisations where they have 100 accounts and each housing around 10 endpoints that will be outrageous `(~$21,600/month* or $259k/yr*)`. <br />
 
 Now the good news is there is a way to avoid paying that outrageous bill with using shared service VPC over TGW. 
 
