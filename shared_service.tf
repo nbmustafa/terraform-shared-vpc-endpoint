@@ -21,12 +21,6 @@ module "endpoints" {
         },
       ]
     },
-    /* dynamodb = {
-      # gateway endpoint
-      service         = "dynamodb"
-      route_table_ids = ["rt-12322456", "rt-43433343", "rt-11223344"]
-      tags            = { Name = "dynamodb-vpc-endpoint" }
-    }, */
     sns = {
       service    = "sns"
       subnet_ids = concat(sort(data.aws_subnet_ids.private.ids),)
@@ -59,40 +53,3 @@ module "endpoints" {
 
   tags = local.tags
 }
-
-
-  /* module "service_dns_a_record" {
-  source  = "nashvan/route53-module/aws"
-  version = "1.2.0"
-
-  hosted_zone = local.account_config["hosted_zone"]
-
-  records = [
-    {
-      name  = "${var.environment_name}.${local.app_name}"
-      type  = "A"
-      alias = {
-        name    = "abc-1830827336.xyz.elb.amazonaws.com"
-        zone_id = "Z35SXDOTRQ7X7K"
-      }
-    },
-    {
-      name  = "${var.environment_name}.${local.app_name}"
-      type  = "A"
-      alias = {
-        name    = "abc-1830827336.xyz.elb.amazonaws.com"
-        zone_id = "Z35SXDOTRQ7X7K"
-      }
-    },
-    {
-      name  = "${var.environment_name}.${local.app_name}"
-      type  = "A"
-      alias = {
-        name    = "abc-1830827336.xyz.elb.amazonaws.com"
-        zone_id = "Z35SXDOTRQ7X7K"
-      }
-    },
-
-  ]
-
-} */
