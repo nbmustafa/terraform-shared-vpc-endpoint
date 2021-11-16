@@ -23,23 +23,23 @@ Below is the solution architecture that we are going to implement it using Terra
 
 # How do I associate a Route 53 private hosted zone with a VPC in a different AWS account or Region?
 
-- To associate a Route 53 private hosted zone in one AWS account (Account A) with a VPC that belongs to another AWS account (Account B) or Region, follow these steps using the AWS CLI. <br />
+- To associate a Route 53 private hosted zone in one AWS account **(Account A)** with a VPC that belongs to another AWS account **(Account B)** or Region, follow these steps using the AWS CLI. <br />
 
-    1. Make sure your AWS cli profile is set to run commands against Account A. <br />
+    1. Make sure your AWS cli profile is set to run commands against **Account A**. <br />
 
-    2. Run the following command to list the available hosted zones in Account A. Note the hosted zone ID in Account A that you'll associate with Account B. <br />
+    2. Run the following command to list the available hosted zones in Account A. Note the hosted zone ID in Account A that you'll associate with **Account B**. <br />
     `aws route53 list-hosted-zones` <br />
 
-    3. Run the following command to authorize the association between the private hosted zone in Account A and the VPC in Account B. Use the hosted zone ID from the previous step. Use the Region and ID of the VPC in Account B. <br />
+    3. Run the following command to authorize the association between the private hosted zone in Account A and the VPC in **Account B**. Use the hosted zone ID from the previous step. Use the Region and ID of the VPC in Account B. <br />
     **Note**: Include "--region" if you are inside any EC2 instance of a different Region or using user's credentials with different Region other than "ap-southeast-2" <br />
-    `aws route53 create-vpc-association-authorization --hosted-zone-id <hosted-zone-id> --vpc VPCRegion=<region>,VPCId=<vpc-id> --region us-east-1` <br />
+    `aws route53 create-vpc-association-authorization --hosted-zone-id <hosted-zone-id> --vpc VPCRegion=<region>,VPCId=<vpc-id> --region ap-southeast-2` <br />
 
-    4. Now switch your AWS cli profile  to run commands against Account B. <br />
+    4. Now switch your AWS cli profile  to run commands against **Account B**. <br />
 
-    5.  Run the following command to create the association between the private hosted zone in Account A and the VPC in Account B. Use the hosted zone ID from step 3. Use the Region and ID of the VPC in Account B.<br />
-    **Note**: Be sure to use an IAM user or role that has permission to run Route 53 APIs in Account B.<br />
-    `aws route53 associate-vpc-with-hosted-zone --hosted-zone-id <hosted-zone-id> --vpc VPCRegion=<region>,VPCId=<vpc-id> --region us-east-1` <br />
+    5.  Run the following command to create the association between the private hosted zone in Account A and the VPC in **Account B**. Use the hosted zone ID from step 3. Use the Region and ID of the VPC in Account B.<br />
+    **Note**: Be sure to use an IAM user or role that has permission to run Route 53 APIs in **Account B**.<br />
+    `aws route53 associate-vpc-with-hosted-zone --hosted-zone-id <hosted-zone-id> --vpc VPCRegion=<region>,VPCId=<vpc-id> --region ap-southeast-2` <br />
 
-    6. It's a best practice to delete the association authorization after the association is created. This step prevents you from recreating the same association later. To delete the authorization, reconnect to Account A. Then, run the following command: <br />
+    6. It's a best practice to delete the association authorization after the association is created. This step prevents you from recreating the same association later. To delete the authorization, reconnect to **Account A**. Then, run the following command: <br />
     `aws route53 delete-vpc-association-authorization --hosted-zone-id <hosted-zone-id>  --vpc VPCRegion=<region>,VPCId=<vpc-id> --region us-east-1` <br />
 
