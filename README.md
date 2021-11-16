@@ -1,8 +1,20 @@
-# How the Application Works
+# What doese this solution do
 
 Although Interface Endpoints scale more cleanly as the number of services increases, they introduce another scaling problem that makes the previous approach of deploying per-VPC impracticable: there's a small fee for each Endpoint of 1 cent per AZ per hour. For example if you were to deploy Interface Endpoints for all of the supported services (currently over 50) across 3 AZs in say 20 VPCs, the cost would be $(0.01 x 50 x 3 x 20) = $30/hr or over $20,000/month!
 
-# How to Build Dockerized node App
+# what resources will be created with this solution:
+- From the the account that has the shared VPC we run terraform code which will create the following resources:
+**Note** We assume VPCs including Shared VPC and TGW are already existing. 
+    1. Create the interface VPC endpoint in Shared Services VPC
+    2. Turn off the private DNS when you create the endpoint.
+    3. Create a Private Hosted zone with the same name as your endpoint (ex: ec2.amazonaws.com). This will give you full control over PHZ
+
+- Now we need to
+    1. Associate your Private Hosted Zone(PHZ) with your other account(s), This way you will be able to resolve to the private IPs of the VPC endpoints
+    2. Make sure you have correct routing through Subnets and security groups
+
+
+
 # Integrating AWS Transit Gateway with AWS PrivateLink and Amazon Route 53 Resolver
 I want to take some time to dive more deeply into a use case outlined in NET301 Best Practices for AWS PrivateLink. The use case involves using AWS Transit Gateway, along with Amazon Route 53 Resolver, to share AWS PrivateLink interface endpoints between multiple connected Amazon virtual private clouds (VPCs) and an on-premises environment. We’ve seen a lot of interest from customers in this architecture. It can greatly reduce the number of VPC endpoints, simplify VPC endpoint deployment, and help cost-optimize when deploying at scale.
 
