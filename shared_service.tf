@@ -10,7 +10,7 @@ module "endpoints" {
       service             = "s3"
       security_group_ids  = [data.aws_security_group.vpc_default_sg.id]
       subnet_ids          = concat(sort(data.aws_subnet_ids.private.ids),)
-      private_dns_enabled = false // by default is false
+      private_dns_enabled = false
       tags                = { Name = "s3-vpc-endpoint" }
 
       domain_name         = "s3.ap-southeast-2.amazonaws.com"
