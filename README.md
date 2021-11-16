@@ -23,4 +23,4 @@ Although Interface Endpoints scale more cleanly as the number of services increa
 6. make a requet to your application api /info API endpoint requests via your browser <br />
   `http://localhost:5000/info`<br />
   api request should retrun result as below:<br />
-  ![output](./images/1-architecture.png)
+  ![output](./images/architecture-1.png)
