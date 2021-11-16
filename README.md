@@ -3,26 +3,43 @@
 Although Interface Endpoints scale more cleanly as the number of services increases, they introduce another scaling problem that makes the previous approach of deploying per-VPC impracticable: there's a small fee for each Endpoint of 1 cent per AZ per hour. For example if you were to deploy Interface Endpoints for all of the supported services (currently over 50) across 3 AZs in say 20 VPCs, the cost would be $(0.01 x 50 x 3 x 20) = $30/hr or over $20,000/month!
 
 # How to Build Dockerized node App
+# Integrating AWS Transit Gateway with AWS PrivateLink and Amazon Route 53 Resolver
+I want to take some time to dive more deeply into a use case outlined in NET301 Best Practices for AWS PrivateLink. The use case involves using AWS Transit Gateway, along with Amazon Route 53 Resolver, to share AWS PrivateLink interface endpoints between multiple connected Amazon virtual private clouds (VPCs) and an on-premises environment. We’ve seen a lot of interest from customers in this architecture. It can greatly reduce the number of VPC endpoints, simplify VPC endpoint deployment, and help cost-optimize when deploying at scale.
+
+Architecture overview
+For VPC endpoints that you use to connect to endpoint services (services you create using AWS PrivateLink behind a Network Load Balancer) the architecture is fairly straightforward. Since the DNS entries for the VPC endpoint are public, you just need layer-three connectivity between a VPC and its destination using either VPC peering, transit gateway, or a VPN. Where the architecture becomes more complex is when you want to share endpoints for AWS services and AWS PrivateLink SaaS.
+
+When you create a VPC endpoint to an AWS service or AWS PrivateLink SaaS, you can enable Private DNS. When enabled, the setting creates an AWS managed Route 53 private hosted zone (PHZ) for you. The managed PHZ works great for resolving the DNS name within a VPC however, it does not work outside of the VPC. This is where PHZ sharing and Route 53 Resolver come into play to help us get unified name resolution for shared VPC endpoints. We’ll now dig into how you can make this name resolution work from VPC to VPC and from on-premises.
+
+Custom PHZ
+In both the VPC-to-VPC and on-premises scenarios our first step is to disable private DNS on the VPC endpoint. From the VPC console, we’ll choose Endpoints and select the endpoint. For Enable Private DNS Name, we’ll clear the check box.
+
+https://aws.amazon.com/blogs/networking-and-content-delivery/integrating-aws-transit-gateway-with-aws-privatelink-and-amazon-route-53-resolver/
+
+
 Below is the solution architecture that we are going to implement it using Terraform and shell script
 ![output](./images/architecture-1.png)
 
-1. clone this project `git clone git@github.com:anz-ecp/nashwan-mustafa.git` <br />
-2. cd nashwan-mustafa 
-3. build your application in a docker image <br />
-  `make dkuild` <br />
-  or <br />
-  `docker build --build-arg=GIT_SHA=$(git rev-parse --short HEAD) -t nashvan/myanzapp .` <br />
-4. Tag Image with release tag then pushing to docker repository
-  `make dkpush` <br />
-  Or run the following commands:<br />
-  `docker tag <user>/myanzapp:latest <user>/myanzapp-anz:<release_tag_version>` <br />
-  `docker tag nashvan/myanzapp:latest nashvan/myanzapp:1.0.0` <br />
-  `docker push <user>/myanzapp:<release_tag_version>` <br />
-  `docker push nashvan/myanzapp:1.0.0` <br />
 
-5. Run docker container, map the port to your desired port: <br />
-  `docker run -p 5000:8080 myanzapp` <br />
-6. make a requet to your application api /info API endpoint requests via your browser <br />
-  `http://localhost:5000/info`<br />
-  api request should retrun result as below:<br />
-  ![output](./images/architecture-1.png)
+# How do I associate a Route 53 private hosted zone with a VPC in a different AWS account or Region?
+
+- To associate a Route 53 private hosted zone in one AWS account (Account A) with a VPC that belongs to another AWS account (Account B) or Region, follow these steps using the AWS CLI. <br />
+
+    1. Make sure your AWS cli profile is set to run commands against Account A. <br />
+
+    2. Run the following command to list the available hosted zones in Account A. Note the hosted zone ID in Account A that you'll associate with Account B. <br />
+    `aws route53 list-hosted-zones` <br />
+
+    3. Run the following command to authorize the association between the private hosted zone in Account A and the VPC in Account B. Use the hosted zone ID from the previous step. Use the Region and ID of the VPC in Account B. <br />
+    **Note**: Include "--region" if you are inside any EC2 instance of a different Region or using user's credentials with different Region other than "ap-southeast-2" <br />
+    `aws route53 create-vpc-association-authorization --hosted-zone-id <hosted-zone-id> --vpc VPCRegion=<region>,VPCId=<vpc-id> --region us-east-1` <br />
+
+    4. Now switch your AWS cli profile  to run commands against Account B. <br />
+
+    5.  Run the following command to create the association between the private hosted zone in Account A and the VPC in Account B. Use the hosted zone ID from step 3. Use the Region and ID of the VPC in Account B.<br />
+    **Note**: Be sure to use an IAM user or role that has permission to run Route 53 APIs in Account B.<br />
+    `aws route53 associate-vpc-with-hosted-zone --hosted-zone-id <hosted-zone-id> --vpc VPCRegion=<region>,VPCId=<vpc-id> --region us-east-1` <br />
+
+    6. It's a best practice to delete the association authorization after the association is created. This step prevents you from recreating the same association later. To delete the authorization, reconnect to Account A. Then, run the following command: <br />
+    `aws route53 delete-vpc-association-authorization --hosted-zone-id <hosted-zone-id>  --vpc VPCRegion=<region>,VPCId=<vpc-id> --region us-east-1` <br />
+
