@@ -1,7 +1,14 @@
 # Save money with Shared VPC endpoints in a Multi-Account TGW setup
 ## About the Solution
 
-Although Interface Endpoints scale more cleanly as the number of services increases, they introduce another scaling problem that makes the previous approach of deploying per-VPC impracticable: there's a small fee for each Endpoint of 1 cent per AZ per hour. For example if you were to deploy Interface Endpoints for all of the supported services (currently over 50) across 3 AZs in say 20 VPCs, the cost would be $(0.01 x 50 x 3 x 20) = $30/hr or over $20,000/month!
+The cost of VPC endpoints depends on multiple factors like the number of endpoints. Although Interface Endpoints scale more cleanly as the number of services increases, they introduce another scaling problem that makes the previous approach of deploying per-VPC impracticable: 
+
+Each Endpoint costs 1 cent per AZ per hour. For example if you were to deploy Interface Endpoints for all of the supported services (currently over 50) across 3 AZs in say 20 VPCs, the cost would be $(0.01 x 50 x 3 x 20) = $30/hr or over $20,000/month! <br />
+
+`Formula: #VPC Endpoints X #AZs X 24hrs X 30 days X .01(Pricing per VPC endpoint per AZ ($/hour)) [10 x 3 x 24 x 30 x .01] = ~$216/month*` <br />
+The cost doesn’t look bad if you have one or two accounts, but if you have 100 accounts and each housing around 10 endpoints that will be outrageous (~$21,600/month* or $259k/yr*). <br />
+
+Now the good news is there is a way to avoid paying that outrageous bill with using shared service VPC over TGW. 
 
 # what resources will be created with this solution:
 - From the the account that has the shared VPC we run terraform code which will create the following resources:
@@ -17,7 +24,7 @@ Although Interface Endpoints scale more cleanly as the number of services increa
 
 
 # Integrating AWS Transit Gateway with AWS PrivateLink and Amazon Route 53 Resolver
-I want to take some time to dive more deeply into a use case outlined in NET301 Best Practices for AWS PrivateLink. The use case involves using AWS Transit Gateway, along with Amazon Route 53 Resolver, to share AWS PrivateLink interface endpoints between multiple connected Amazon virtual private clouds (VPCs) and an on-premises environment. We’ve seen a lot of interest from customers in this architecture. It can greatly reduce the number of VPC endpoints, simplify VPC endpoint deployment, and help cost-optimize when deploying at scale.
+ This solution is bart of Best Practices for AWS PrivateLink. It uses AWS Transit Gateway, along with Amazon Route 53 hosted zone, and vpc endpoints in a so called shared-service-vpc to share AWS PrivateLink interface endpoints between multiple connected (VPCs) and an on-premises environment. This solution can greatly reduce the number of VPC endpoints, simplify VPC endpoint deployment, which mean less operation and maintenance overhead and most importatantly help cost-optimize when deploying at scale.
 
 Architecture overview
 For VPC endpoints that you use to connect to endpoint services (services you create using AWS PrivateLink behind a Network Load Balancer) the architecture is fairly straightforward. Since the DNS entries for the VPC endpoint are public, you just need layer-three connectivity between a VPC and its destination using either VPC peering, transit gateway, or a VPN. Where the architecture becomes more complex is when you want to share endpoints for AWS services and AWS PrivateLink SaaS.
