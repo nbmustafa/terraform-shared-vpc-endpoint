@@ -4,6 +4,16 @@ data aws_region current {
 data aws_caller_identity current {
 }
 
+data aws_subnet_ids private {
+  vpc_id = module.vpc.vpc_id
+}
+
+data aws_security_group vpc_default_sg {
+  vpc_id = module.vpc.vpc_id
+  name   = "default"
+}
+
+/* 
 data aws_vpc private_vpc {
   filter {
     name   = "tag:Name"
@@ -18,7 +28,7 @@ data aws_subnet_ids private {
 data aws_security_group vpc_default_sg {
   vpc_id = data.aws_vpc.private_vpc.id
   name   = "default"
-}
+} */
 
 /* data "aws_route_tables" "rts" {
   vpc_id = data.aws_vpc.vpc.id
