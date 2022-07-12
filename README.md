@@ -64,4 +64,3 @@ Below is the solution architecture that we are going to implement it using Terra
 
     6. It's a best practice to delete the association authorization after the association is created. This step prevents you from recreating the same association later. To delete the authorization, reconnect to **Account A**. Then, run the following command: <br />
     `aws route53 delete-vpc-association-authorization --hosted-zone-id <hosted-zone-id>  --vpc VPCRegion=<region>,VPCId=<vpc-id> --region us-east-1` <br />
-
